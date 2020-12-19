@@ -27,7 +27,7 @@
 ;   (read )
 ;)
 
- ;;;;; Drawing functions
+;;;;; Drawing functions
 
 ; Draws a range of numbers or characters
 (defun draw-numbers (range) 
@@ -68,7 +68,7 @@
 
 ; Generates either numeric or char values 
 (defun to-number-or-char (param)
-	(if (< param 10) param (code-char (+ 65 (mod param 10)))))
+	(if (< param 10) param (code-char (+ 65 (- param 10)))))
 
 ;;;;; State
 
