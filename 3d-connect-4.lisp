@@ -1,3 +1,4 @@
+
 ;;;;; Drawing functions
 
 ; Draws a range of numbers or characters
@@ -71,8 +72,19 @@
 ;;;;; Application
 
 ; Initialize Game
+
 (defun initialize-game (dimension)
-	(draw-state (initial-state dimension) dimension))
+	(if (or (< dimension 4) (> dimension 6) (= (mod dimension 2) 1)) 
+		(progn
+			(format t "Uneli ste neispravne dimenzije. Dimenzije mogu biti 4 ili 6. Unesite ponovo:  ")
+			(initialize-game (read)))
+	(draw-state (initial-state dimension) dimension)))
+
+(defun first-player (fp)
+	(if (equal fp 'r)
+		(format t "Racunar igra prvi.")
+	(format t "Vi igrate prvi.")))
+
 
 ; Game Loop
 ; TODO Implement method
@@ -81,10 +93,11 @@
 ; Main function
 (defun main ()
 	(progn 
-		(format t "Unesite dimenziju table (4 - 6): ")
-		(initialize-game (read))))		
+		(format t "Unesite dimenziju table (4 ili 6): ")
+		(initialize-game (read))
+		(format t "Unesite ko igra prvi. Ukoliko zelite da racunar igra prvi, unesite r, u suprotnom, unesite bilo sta drugo: ")
+		(first-player (read))))
 	
-
 ;;;;; Execution
 
 (main)
