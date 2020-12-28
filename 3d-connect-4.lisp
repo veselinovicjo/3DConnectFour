@@ -1,6 +1,7 @@
 
-;;;;; Drawing functions
+(setq moves-counter 0)
 
+;;;;; Drawing functions
 ; Draws a range of numbers or characters
 (defun draw-numbers (range) 
 	(if (= range 0) '()
@@ -77,25 +78,47 @@
 	(if (or (< dimension 4) (> dimension 6) (= (mod dimension 2) 1)) 
 		(progn
 			(format t "Uneli ste neispravne dimenzije. Dimenzije mogu biti 4 ili 6. Unesite ponovo:  ")
-			(initialize-game (read)))
+			(initialize-game (read))
+			(setq moves-counter (* (* dimension dimension) dimension)))
 	(draw-state (initial-state dimension) dimension)))
+		
+
+(defun game-mode (gm)
+	(if (equal gm 'r)
+		(format t "Uneli ste mod covek protiv racunara.")
+	(format t "Uneli ste mod covek protiv coveka.")))
 
 (defun first-player (fp)
-	(if (equal fp 'r)
-		(format t "Racunar igra prvi.")
-	(format t "Vi igrate prvi.")))
-
+	(if (equal fp 1)
+		(format t "Vi igrate prvi.")
+	(format t "Protivnik igra prvi.")))
 
 ; Game Loop
 ; TODO Implement method
 (defun game-loop ())
+
+;;;;;;;;;;;;;;;; MOVES FUNCTION
+
+
+
+
+; Gameover function
+(defun gameover ()
+	(progn
+		(format t "Igra je zavrsena. Sva polja su popunjena.")
+		(check-winner)))
+
+; Winner
+(defun check-winner ())
 
 ; Main function
 (defun main ()
 	(progn 
 		(format t "Unesite dimenziju table (4 ili 6): ")
 		(initialize-game (read))
-		(format t "Unesite ko igra prvi. Ukoliko zelite da racunar igra prvi, unesite r, u suprotnom, unesite bilo sta drugo: ")
+		(format t "Unesite mod igre. Ukoliko zelite da igrate protiv racunara, unesite r, u suprotnom, unesite bilo sta drugo: ")
+		(game-mode (read))
+		(format t "Unesite prvog igraca. Ukoliko zelite da vi igrate prvi, unesite 1.")
 		(first-player (read))))
 	
 ;;;;; Execution
