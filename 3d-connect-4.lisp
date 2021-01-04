@@ -1,7 +1,5 @@
-
-(setq moves-counter 0)
-
 ;;;;; Drawing functions
+
 ; Draws a range of numbers or characters
 (defun draw-numbers (range) 
 	(if (= range 0) '()
@@ -26,22 +24,61 @@
 			(format t "~%")
 			(draw-state-rec (mapcar (lambda (x) (cdr x)) state) (- dimension 1)))))
 
+; Draws initialization message
+(defun init-message ()
+	(format t "Unesite dimenziju table (4 - 6): "))
+
 ; Draws game state
-(defun draw-state (state dimension)
-	(progn
-		(format t "~%~%")
-		(draw-numbers (* dimension dimension))
-		(format t "~%~%")
-		(draw-state-rec state dimension)
-		(format t "~%")
-		(draw-numbers (* dimension dimension))
-		(format t "~%~%")))
+(defun draw-state (state dimension player)
+	(run-shell-command "clear || cls")
+	(draw-numbers (* dimension dimension))
+	(format t "~%~%")
+	(draw-state-rec state dimension)
+	(format t "~%")
+	(draw-numbers (* dimension dimension))
+	(format t "~%~%")
+	(format t "Na potezu je IGRAC~a: " player))
 
 ;;;;; Utility functions
+
+; Replace element inside list on nth position
+(defun replace-element (li index el)
+	(if (= index 0) (append (list el) (cdr li)) 
+		(append (list (car li)) (replace-element (cdr li) (- index 1) el))))
 
 ; Generates either numeric or char values 
 (defun to-number-or-char (param)
 	(if (< param 10) param (code-char (+ 65 (- param 10)))))
+
+; Checks if move is valid
+(defun valid-move (table dimension j k)
+	(cond 
+		((or (< j 0) (> j dimension)) '())
+		((or (< k 0) (> k dimension)) '())
+		((not (check-if-field-free table dimension j k)) '())
+		(t t)))
+
+; Checks if field is free
+(defun check-if-field-free (table dimension j k)
+	(if (check-available-field-col (mapcar (lambda (x) (nth j x)) (nth k table))) t '()))
+
+; Checks if there is at least one available field in the column
+(defun check-available-field-col (li)
+	(cond
+		((null li) '())
+		((equal '- (car li)) t)
+		(t (check-available-field-col (cdr li)))))
+
+; Move to coordinates
+(defun move-to-coords (move dimension)
+	(cond 
+		((and (<= (char-code move) (char-code #\9)) (>= (char-code move) (char-code #\0))) 
+			(list  (mod  (- (char-code move) (char-code #\0)) dimension) (floor (- (char-code move) (char-code #\0)) dimension)))
+		((< (char-code move) (char-code #\a)) 
+			(list (mod (+ 10 (- (char-code move) (char-code #\A)))  dimension)  (floor (+ 10 (- (char-code move) (char-code #\A))) dimension)))
+		((>= (char-code move) (char-code #\a)) 
+			(list (mod (+ 10 (- (char-code move) (char-code #\a)))  dimension)  (floor (+ 10 (- (char-code move) (char-code #\a))) dimension)))
+		(t '())))
 
 ;;;;; State
 
@@ -70,57 +107,59 @@
 (defun initial-state (dimension)
 	(create-state '- dimension dimension))
 
+; Plays move
+(defun play-move (table figure move)
+	(let ((dimension 0) (coords '())))
+	(progn
+		(setf dimension (length table))
+		(setf coords (move-to-coords move dimension))
+		(if (valid-move table dimension (car coords) (cadr coords)) 
+			(next-state table figure (car coords) (cadr coords)) table)))
+
+; Next state function
+(defun next-state (table figure j k)
+	(let ((i 0)))
+	(progn
+		(setf i (last-available-field-index 1 (reverse (mapcar (lambda (x) (nth j x)) (nth k table))) (length table)))
+		(if (< i 0) table
+			(replace-element table k (replace-element (nth k table) i (replace-element (nth i (nth k table)) j figure))))))
+
+; Finds last available field index in the column of the game board
+(defun last-available-field-index (initial li dimension)
+	 (cond
+		((null li) -1)
+		((equal '- (car li)) (- dimension initial))
+		(t (last-available-field-index (1+ initial) (cdr li) dimension))))
+
+; Determines what figure plays next
+(defun next-figure (figure)
+	(if (equal figure 'X) 'O 'X))
+
+; Determines who plays next
+(defun next-player (player)
+	(if (= player 1) 2 1))
+
+; Determines if game has ended
+(defun has-game-ended (table) nil)
+
 ;;;;; Application
 
-; Initialize Game
-
-(defun initialize-game (dimension)
-	(if (or (< dimension 4) (> dimension 6) (= (mod dimension 2) 1)) 
-		(progn
-			(format t "Uneli ste neispravne dimenzije. Dimenzije mogu biti 4 ili 6. Unesite ponovo:  ")
-			(initialize-game (read))
-			(setq moves-counter (* (* dimension dimension) dimension)))
-	(draw-state (initial-state dimension) dimension)))
-		
-
-(defun game-mode (gm)
-	(if (equal gm 'r)
-		(format t "Uneli ste mod covek protiv racunara.")
-	(format t "Uneli ste mod covek protiv coveka.")))
-
-(defun first-player (fp)
-	(if (equal fp 1)
-		(format t "Vi igrate prvi.")
-	(format t "Protivnik igra prvi.")))
+; Reads move from standard input
+(defun read-move ()
+	(car (coerce (read-line) 'list)))
 
 ; Game Loop
-; TODO Implement method
-(defun game-loop ())
-
-;;;;;;;;;;;;;;;; MOVES FUNCTION
-
-
-
-
-; Gameover function
-(defun gameover ()
-	(progn
-		(format t "Igra je zavrsena. Sva polja su popunjena.")
-		(check-winner)))
-
-; Winner
-(defun check-winner ())
+(defun game-loop (current-state previous-state figure player)	
+	(draw-state current-state (length current-state) player)
+	(cond
+		((has-game-ended current-state) '())
+		(t (game-loop (play-move current-state figure (read-move)) current-state (next-figure figure) (next-player player)))))
 
 ; Main function
 (defun main ()
-	(progn 
-		(format t "Unesite dimenziju table (4 ili 6): ")
-		(initialize-game (read))
-		(format t "Unesite mod igre. Ukoliko zelite da igrate protiv racunara, unesite r, u suprotnom, unesite bilo sta drugo: ")
-		(game-mode (read))
-		(format t "Unesite prvog igraca. Ukoliko zelite da vi igrate prvi, unesite 1.")
-		(first-player (read))))
-	
+	(init-message)
+	(game-loop (initial-state (read)) '() 'X 1))
+
 ;;;;; Execution
 
 (main)
