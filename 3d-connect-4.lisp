@@ -52,14 +52,14 @@
 
 ; Checks if move is valid
 (defun valid-move (table dimension j k)
-	(cond 
+	(cond
 		((or (< j 0) (> j dimension)) '())
 		((or (< k 0) (> k dimension)) '())
-		((not (check-if-field-free table dimension j k)) '())
+		((not (check-if-field-free table j k)) '())
 		(t t)))
 
 ; Checks if field is free
-(defun check-if-field-free (table dimension j k)
+(defun check-if-field-free (table j k)
 	(if (check-available-field-col (mapcar (lambda (x) (nth j x)) (nth k table))) t '()))
 
 ; Checks if there is at least one available field in the column
@@ -114,7 +114,10 @@
 		(setf dimension (length table))
 		(setf coords (move-to-coords move dimension))
 		(if (valid-move table dimension (car coords) (cadr coords)) 
-			(next-state table figure (car coords) (cadr coords)) table)))
+			(next-state table figure (car coords) (cadr coords))
+			(progn
+			(format t "Uneli ste neispravan potez, unesite ponovo. ")
+			(play-move table figure (read-move))))))
 
 ; Next state function
 (defun next-state (table figure j k)
@@ -140,7 +143,12 @@
 	(if (= player 1) 2 1))
 
 ; Determines if game has ended
-(defun has-game-ended (table) nil)
+(defun has-game-ended (table)
+	(if (check-available-field-col (car table)) null
+		(has-game-ended (cdr table)))
+)
+
+
 
 ;;;;; Application
 
@@ -151,9 +159,9 @@
 ; Game Loop
 (defun game-loop (current-state previous-state figure player)	
 	(draw-state current-state (length current-state) player)
-	(cond
-		((has-game-ended current-state) '())
-		(t (game-loop (play-move current-state figure (read-move)) current-state (next-figure figure) (next-player player)))))
+	(if (not (has-game-ended current-state))
+		 	(game-loop (play-move current-state figure (read-move)) current-state (next-figure figure) (next-player player))
+			(format t "igra je zavrsena")))
 
 ; Main function
 (defun main ()
