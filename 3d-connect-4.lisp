@@ -143,12 +143,7 @@
 	(if (= player 1) 2 1))
 
 ; Determines if game has ended
-(defun has-game-ended (table)
-	(if (check-available-field-col (car table)) null
-		(has-game-ended (cdr table)))
-)
-
-
+(defun has-game-ended (table) '())
 
 ;;;;; Application
 
