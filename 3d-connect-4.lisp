@@ -1,3 +1,25 @@
+(defun alpha-beta (table depth a b figure)
+	(let
+		((moveslist (all-available-moves table figure))
+        (bestvalue '()) (bestmove '()) (state '())
+        (tmp '()) (alpha a) (beta b))
+		(cond 
+            ((or (null moveslist) (= depth 0)))
+            ((equal figure 'X) 
+                (progn
+                    (setf bestvalue -999999)
+                    (loop for move in moveslist do
+                        (progn )))
+            ((equal figure 'O)
+                (progn
+                    (setf bestvalue 999999)
+                    (loop for move in moveslist do
+                        (progn ))))))))
+
+(defun computer-move (table figure)
+    (let ((move (cadr (alpha-beta table 2 -999999 999999 figure))))
+        (next-state table figure)))
+
 ;;;;; Drawing functions
 
 ; Draws a range of numbers or characters
